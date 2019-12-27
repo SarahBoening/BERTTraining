@@ -6,8 +6,8 @@ All files and models for training BERT on Java source code
 Python files: run_lm_finetuning, model_chain, benchmark
 
 ### Models
-Trained on 10 training files with 10k Java files, 3 epochs, rest on standard configuration
-the own_vocab has a modifed vocabulary file that contains Java keywords
+Trained on 30 training files each containing 10k Java files for 2 epochs, rest on standard configuration
+the own_vocab has a modifed vocabulary file that contains additional Java keywords
 
 ### Python files
 `run_lm_finetuning.py`: standard training file from the [Huggingface repo](https://github.com/huggingface/transformers)
