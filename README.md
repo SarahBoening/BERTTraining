@@ -15,14 +15,14 @@ the own_vocab has a modifed vocabulary file that contains additional Java keywor
 `benchmark.py`: benchmark for trained model
 
 ## How to use it
-1. install transformers and the requirements it needs (pytorch & Tensorflow 2.0) ( I used transformers 2.1.1, when using a newer version, the run scripts need to be updated)
-2. place model files and run scripts in a folder
+1. install transformers and the requirements it needs (pytorch & Tensorflow 2.0) ( I used transformers 2.1.1, when using a newer version, the run-scripts need to be updated)
+2. place model files and run-scripts in a folder
 3. run one of the scripts
 4. wait for the training to finish
-5. run benchmark
+5. run benchmark (optionally)
 
 ## Run scripts
-**Examples I used to train BERT**
+**Examples I used to train BERT**  
 Using the normal vocabulary and pretrained model with multiprocessing:  
 ```
 python3 ./model_chain.py --data_folder=/path/to/trainfilesdir --output_dir=/path/to/outputdir --model_type=bert --model_name_or_path=bert-base-cased --do_train --do_eval --evaluate_during_training --per_gpu_train_batch_size=1 --per_gpu_eval_batch_size=1 --num_train_epochs=1 --save_steps=100 --save_total_limit=100 --overwrite_output_dir --gpu_ids=0 --pre_process_count=8 --logging_steps=5000 --mlm
@@ -37,6 +37,6 @@ The cache folder will contain the cached files the BERT model loads on start wit
 
 ## Benchmark
 1. open the file in an editor of your choice
-2. change the path to your trained model
+2. change the path to your trained model & a valid file to use for the benchmark
 3. alter parameters if needed
 4. run 
