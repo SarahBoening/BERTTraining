@@ -2,16 +2,16 @@
 All files and models for training BERT on Java source code
 
 ## Content
-2 trained models: best_checkpoint-1820000_multi, best_checkpoint_110000_own_vocab
+2 trained models: best_checkpoint-1820000_multi, best_checkpoint_110000_own_vocab  
 Python files: run_lm_finetuning, model_chain, benchmark
 
 ### Models
-Trained on 30 training files each containing 10k Java files for 2 epochs, rest on standard configuration
+Trained on 30 training files each containing 10k Java files for 2 epochs, rest on standard configuration  
 the own_vocab has a modifed vocabulary file that contains additional Java keywords
 
 ### Python files
-`run_lm_finetuning.py`: standard training file from the [Huggingface repo](https://github.com/huggingface/transformers)
-`model_chain.py`: multiprocessing of training files, multiple files are allowed, code from [here](https://github.com/EndruK/transformers)
+`run_lm_finetuning.py`: standard training file from the [Huggingface repo](https://github.com/huggingface/transformers)  
+`model_chain.py`: multiprocessing of training files, multiple files are allowed, code from [here](https://github.com/EndruK/transformers)  
 `benchmark.py`: benchmark for trained model
 
 ## How to use it
