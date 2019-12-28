@@ -81,7 +81,7 @@ class TextDataset(Dataset):
         return torch.tensor(self.examples[item])
 
 def load_and_cache_examples(args, tokenizer, evaluate=False):
-    dataset = TextDataset(tokenizer, file_path=args.eval_data_file if evaluate else args.train_data_file, block_size=args.block_size)
+    dataset = TextDataset(tokenizer, file_path=args.eval_path if evaluate else args.train_data_file, block_size=args.block_size)
     return dataset
 
 def load_and_cache_examples_subprocess(process_id, file_list, start, end, args, tokenizer):
@@ -379,6 +379,7 @@ def main():
     #  path to training data
     parser.add_argument("--data_folder", default=None, type=str, required=True,
                         help="path to corpus data")
+    parser.add_argument("--eval_path", default=None, type=str, required=False, help="path to specific evaluation file")					
     #  path to store the trained model
     parser.add_argument("--output_dir", default=None, type=str, required=True,
                         help="the folder where the results are dumped")
@@ -524,8 +525,13 @@ def main():
     ### do training ###
 
     # load folders
-    training_files, valid_file = get_samples(args)
-
+    if args.eval_path == None:
+	    training_files, valid_file = get_samples(args)
+    else:
+	    training_files = get_samples(args)
+		valid_file = []
+	    valid = load_and_cache_examples(args, tokenizer, evaluate=True)
+		valid_file.append(valid)
 
     if args.do_train:
         if args.local_rank not in [-1, 0]:
