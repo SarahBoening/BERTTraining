@@ -325,7 +325,7 @@ def evaluate(args, model, eval_files, tokenizer, prefix=""):
     eval_output_dir = args.output_dir
 
     #eval_dataset = load_and_cache_examples(args, tokenizer, evaluate=True)
-    eval_dataset = TextDataset(tokenizer, file_path=eval_files[0], block_size=args.block_size)
+    eval_dataset = TextDataset(tokenizer, file_path=eval_files, block_size=args.block_size)
     #eval_dataset = load_and_cache_examples_multiprocess(args, eval_files, tokenizer)
     if not os.path.exists(eval_output_dir) and args.local_rank in [-1, 0]:
         os.makedirs(eval_output_dir)
@@ -529,9 +529,7 @@ def main():
 	    training_files, valid_file = get_samples(args)
     else:
 	    training_files = get_samples(args)
-		valid_file = []
-	    valid = load_and_cache_examples(args, tokenizer, evaluate=True)
-		valid_file.append(valid)
+		valid_file = args.eval_path
 
     if args.do_train:
         if args.local_rank not in [-1, 0]:
