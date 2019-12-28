@@ -12,8 +12,8 @@ the own_vocab has a modifed vocabulary file that contains additional Java keywor
 ### Python files
 `run_lm_finetuning.py`: standard training file from the [Huggingface repo](https://github.com/huggingface/transformers)  
 `model_chain.py`: multiprocessing of training files, multiple files are allowed, code from [here](https://github.com/EndruK/transformers)  
-`benchmark.py`: benchmark for trained model
-`bert_generation.py`  
+`benchmark.py`: benchmark for trained model  
+`bert_generation.py` script to test longer text predictions/ generation with BERT  
 `finetuned_Bert_Test.py` simple script to test models for BertForMaskedLM 
 `java_generation.py` test to try different predictions for BERT (argmax, sampling)  
 `load_dataset.py` file to produce subsets of a corpus as .raw files    
