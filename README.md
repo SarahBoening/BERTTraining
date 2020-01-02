@@ -2,7 +2,7 @@
 All files and models for training BERT on Java source code
 
 ## Content
-trained models: Can be found [here](https://www.dropbox.com/sh/3rma84xdvwlnkif/AADSzYlI5BnuSIFaWwO58fpea?dl=0)
+Trained models: Can be found [here](https://www.dropbox.com/sh/3rma84xdvwlnkif/AADSzYlI5BnuSIFaWwO58fpea?dl=0)  
 Python files for working with this model
 
 ### Models
