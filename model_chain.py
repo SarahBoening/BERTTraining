@@ -323,7 +323,9 @@ def train(args, train_datasets, model, tokenizer, global_step, tr_loss, logging_
 def evaluate(args, model, eval_files, tokenizer, prefix=""):
     # Loop to handle MNLI double evaluation (matched, mis-matched)
     eval_output_dir = args.output_dir
-
+    # quick fix for 2 different types of eval files	
+    if isinstance(eval_files, list):
+	eval_files = eval_files[0]
     #eval_dataset = load_and_cache_examples(args, tokenizer, evaluate=True)
     eval_dataset = TextDataset(tokenizer, file_path=eval_files, block_size=args.block_size)
     #eval_dataset = load_and_cache_examples_multiprocess(args, eval_files, tokenizer)
