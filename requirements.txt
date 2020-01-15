@@ -2,4 +2,4 @@ torch
 torchvision
 tensorflow
 tensorflow-gpu
-transformers
+transformers==2.1.1
