@@ -1,5 +1,5 @@
-torch
-torchvision
-tensorflow
-tensorflow-gpu
+torch==1.4.0+cu100 torchvision==0.5.0+cu100 -f https://download.pytorch.org/whl/torch_stable.html
+tensorflow==1.14.0
+tensorflow-gpu==1.14.0
 transformers==2.1.1
+scikit-learn
