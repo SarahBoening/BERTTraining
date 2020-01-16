@@ -527,11 +527,10 @@ def main():
     ### do training ###
 
     # load folders
-    if args.eval_path == None:
-	    training_files, valid_file = get_samples(args)
-    else:
-	    training_files = get_samples(args)
-		valid_file = args.eval_path
+    training_files, valid_file = get_samples(args)
+    if args.eval_path:
+	traning_files.append(valid_file[0])	
+        valid_file = args.eval_path
 
     if args.do_train:
         if args.local_rank not in [-1, 0]:
