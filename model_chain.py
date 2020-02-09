@@ -24,12 +24,11 @@ except:
 from tqdm import tqdm, trange
 
 from transformers import (WEIGHTS_NAME, AdamW, WarmupLinearSchedule,
-                                  BertConfig, BertForMaskedLM, BertTokenizer,
-                                  GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
-                                  OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
-                                  RobertaConfig, RobertaForMaskedLM, RobertaTokenizer,
-                                  DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
-
+                          BertConfig, BertForMaskedLM, BertTokenizer,
+                          GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
+                          OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
+                          RobertaConfig, RobertaForMaskedLM, RobertaTokenizer,
+                          DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +39,7 @@ MODEL_CLASSES = {
     'roberta': (RobertaConfig, RobertaForMaskedLM, RobertaTokenizer),
     'distilbert': (DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
 }
+
 
 class TextDataset(Dataset):
     def __init__(self, tokenizer, file_path='train', block_size=512):
@@ -60,8 +60,8 @@ class TextDataset(Dataset):
 
             tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
 
-            for i in range(0, len(tokenized_text)-block_size+1, block_size): # Truncate in block of block_size
-                self.examples.append(tokenizer.build_inputs_with_special_tokens(tokenized_text[i:i+block_size]))
+            for i in range(0, len(tokenized_text) - block_size + 1, block_size):  # Truncate in block of block_size
+                self.examples.append(tokenizer.build_inputs_with_special_tokens(tokenized_text[i:i + block_size]))
             # Note that we are loosing the last truncated example here for the sake of simplicity (no padding)
             # If your dataset is small, first you should loook for a bigger one :-) and second you
             # can change this behavior by adding (model specific) padding.
@@ -80,16 +80,19 @@ class TextDataset(Dataset):
     def __getitem__(self, item):
         return torch.tensor(self.examples[item])
 
+
 def load_and_cache_examples(args, tokenizer, evaluate=False):
-    dataset = TextDataset(tokenizer, file_path=args.eval_path if evaluate else args.train_data_file, block_size=args.block_size)
+    dataset = TextDataset(tokenizer, file_path=args.eval_path if evaluate else args.train_data_file,
+                          block_size=args.block_size)
     return dataset
+
 
 def load_and_cache_examples_subprocess(process_id, file_list, start, end, args, tokenizer):
     result = []
     for i, file in enumerate(file_list[start:end]):
         dataset = TextDataset(tokenizer, file_path=file, block_size=args.block_size)
         result.append(dataset)
-        logger.info("process %d current progress: %d/%d" % (process_id, i+1, end - start))
+        logger.info("process %d current progress: %d/%d" % (process_id, i + 1, end - start))
     logger.info("process %d done" % process_id)
     return result
 
@@ -119,12 +122,14 @@ def load_and_cache_examples_multiprocess(args, file_list, tokenizer, evaluate=Fa
             results.extend(result)
     return results
 
+
 def set_seed(args):
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     if args.n_gpu > 0:
         torch.cuda.manual_seed_all(args.seed)
+
 
 def _rotate_checkpoints(args, checkpoint_prefix, use_mtime=False):
     if not args.save_total_limit:
@@ -154,12 +159,14 @@ def _rotate_checkpoints(args, checkpoint_prefix, use_mtime=False):
         logger.info("Deleting older checkpoint [{}] due to args.save_total_limit".format(checkpoint))
         shutil.rmtree(checkpoint)
 
+
 def mask_tokens(inputs, tokenizer, args):
     """ Prepare masked tokens inputs/labels for masked language modeling: 80% MASK, 10% random, 10% original. """
     labels = inputs.clone()
     # We sample a few tokens in each sequence for masked-LM training (with probability args.mlm_probability defaults to 0.15 in Bert/RoBERTa)
     probability_matrix = torch.full(labels.shape, args.mlm_probability)
-    special_tokens_mask = [tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True) for val in labels.tolist()]
+    special_tokens_mask = [tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True) for val in
+                           labels.tolist()]
     probability_matrix.masked_fill_(torch.tensor(special_tokens_mask, dtype=torch.bool), value=0.0)
     masked_indices = torch.bernoulli(probability_matrix).bool()
     labels[~masked_indices] = -1  # We only compute loss on masked tokens
@@ -175,6 +182,7 @@ def mask_tokens(inputs, tokenizer, args):
 
     # The rest of the time (10% of the time) we keep the masked input tokens unchanged
     return inputs, labels
+
 
 def train(args, train_datasets, model, tokenizer, global_step, tr_loss, logging_loss, valid=None):
     """ Train the model """
@@ -201,7 +209,8 @@ def train(args, train_datasets, model, tokenizer, global_step, tr_loss, logging_
     # Prepare optimizer and schedule (linear warmup and decay)
     no_decay = ['bias', 'LayerNorm.weight']
     optimizer_grouped_parameters = [
-        {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)], 'weight_decay': args.weight_decay},
+        {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
+         'weight_decay': args.weight_decay},
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
@@ -229,14 +238,15 @@ def train(args, train_datasets, model, tokenizer, global_step, tr_loss, logging_
     logger.info("  Num Epochs = %d", args.num_train_epochs)
     logger.info("  Instantaneous batch size per GPU = %d", args.per_gpu_train_batch_size)
     logger.info("  Total train batch size (w. parallel, distributed & accumulation) = %d",
-                args.train_batch_size * args.gradient_accumulation_steps * (torch.distributed.get_world_size() if args.local_rank != -1 else 1))
+                args.train_batch_size * args.gradient_accumulation_steps * (
+                    torch.distributed.get_world_size() if args.local_rank != -1 else 1))
     logger.info("  Gradient Accumulation steps = %d", args.gradient_accumulation_steps)
     logger.info("  Total optimization steps = %d", t_total)
 
     best_pplxty = sys.maxsize
 
-    #global_step = 0
-    #tr_loss, logging_loss = 0.0, 0.0
+    # global_step = 0
+    # tr_loss, logging_loss = 0.0, 0.0
     model.zero_grad()
     train_iterator = trange(int(args.num_train_epochs), desc="Epoch", disable=args.local_rank not in [-1, 0])
     set_seed(args)  # Added here for reproducibility (even between python 2 and 3)
@@ -280,7 +290,9 @@ def train(args, train_datasets, model, tokenizer, global_step, tr_loss, logging_
                             best_pplxty = results["perplexity"]
                             # save the best perplexity
                             checkpoint_prefix = 'best_checkpoint'
-                            output_dir = os.path.join(args.output_dir, '{}-{}-perplexity{}'.format(checkpoint_prefix, global_step, best_pplxty))
+                            output_dir = os.path.join(args.output_dir,
+                                                      '{}-{}-perplexity{}'.format(checkpoint_prefix, global_step,
+                                                                                  best_pplxty))
                             if not os.path.exists(output_dir):
                                 os.makedirs(output_dir)
                             model_to_save = model.module if hasattr(model,
@@ -292,7 +304,7 @@ def train(args, train_datasets, model, tokenizer, global_step, tr_loss, logging_
                         for key, value in results.items():
                             tb_writer.add_scalar('eval_{}'.format(key), value, global_step)
                     tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-                    tb_writer.add_scalar('loss', (tr_loss - logging_loss)/args.logging_steps, global_step)
+                    tb_writer.add_scalar('loss', (tr_loss - logging_loss) / args.logging_steps, global_step)
                     logging_loss = tr_loss
 
                 if args.local_rank in [-1, 0] and args.save_steps > 0 and global_step % args.save_steps == 0:
@@ -301,7 +313,8 @@ def train(args, train_datasets, model, tokenizer, global_step, tr_loss, logging_
                     output_dir = os.path.join(args.output_dir, '{}-{}'.format(checkpoint_prefix, global_step))
                     if not os.path.exists(output_dir):
                         os.makedirs(output_dir)
-                    model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+                    model_to_save = model.module if hasattr(model,
+                                                            'module') else model  # Take care of distributed/parallel training
                     model_to_save.save_pretrained(output_dir)
                     torch.save(args, os.path.join(output_dir, 'training_args.bin'))
                     logger.info("Saving model checkpoint to %s", output_dir)
@@ -320,21 +333,27 @@ def train(args, train_datasets, model, tokenizer, global_step, tr_loss, logging_
 
     return global_step, tr_loss / global_step, logging_loss
 
+
 def evaluate(args, model, eval_files, tokenizer, prefix=""):
     # Loop to handle MNLI double evaluation (matched, mis-matched)
     eval_output_dir = args.output_dir
     # quick fix for 2 different types of eval files	
-    if isinstance(eval_files, list):
-	eval_files = eval_files[0]
-    #eval_dataset = load_and_cache_examples(args, tokenizer, evaluate=True)
-    eval_dataset = TextDataset(tokenizer, file_path=eval_files, block_size=args.block_size)
-    #eval_dataset = load_and_cache_examples_multiprocess(args, eval_files, tokenizer)
+    if isinstance(eval_files, list) and len(eval_files) > 1:
+        eval_datasets = load_and_cache_examples_multiprocess(args, eval_files, tokenizer, evaluate=False)
+        eval_dataset = eval_datasets[0]
+        for ds in eval_datasets[1:]:
+            eval_dataset.join(ds)
+    else:
+        eval_files = eval_files[0]
+        # eval_dataset = load_and_cache_examples(args, tokenizer, evaluate=True)
+        eval_dataset = TextDataset(tokenizer, file_path=eval_files, block_size=args.block_size)
+    # eval_dataset = load_and_cache_examples_multiprocess(args, eval_files, tokenizer)
     if not os.path.exists(eval_output_dir) and args.local_rank in [-1, 0]:
         os.makedirs(eval_output_dir)
     # TODO: change for multiple files
-    #if len(eval_dataset) > 10:
+    # if len(eval_dataset) > 10:
     #    eval_dataset = eval_dataset[:10]
-    #else:
+    # else:
     #    eval_dataset = eval_dataset[0]
     args.eval_batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)
     # Note that DistributedSampler samples randomly
@@ -381,7 +400,7 @@ def main():
     #  path to training data
     parser.add_argument("--data_folder", default=None, type=str, required=True,
                         help="path to corpus data")
-    parser.add_argument("--eval_path", default=None, type=str, required=False, help="path to specific evaluation file")					
+    parser.add_argument("--eval_path", default=None, type=str, required=False, help="path to specific evaluation file")
     #  path to store the trained model
     parser.add_argument("--output_dir", default=None, type=str, required=True,
                         help="the folder where the results are dumped")
@@ -529,8 +548,11 @@ def main():
     # load folders
     training_files, valid_file = get_samples(args)
     if args.eval_path:
-	traning_files.append(valid_file[0])	
-        valid_file = args.eval_path
+        if os.path.isdir(args.eval_path):
+            valid_file = get_samples(args, 1)
+        else:
+            traning_files.append(valid_file[0])
+            valid_file = args.eval_path
 
     if args.do_train:
         if args.local_rank not in [-1, 0]:
@@ -540,13 +562,13 @@ def main():
             torch.distributed.barrier()
         global_step = 0
         tr_loss, logging_loss = 0.0, 0.0
-        global_step, tr_loss, logging_loss = train(args, preprocessed_datasets, model, tokenizer, global_step, tr_loss, logging_loss, valid=valid_file)
+        global_step, tr_loss, logging_loss = train(args, preprocessed_datasets, model, tokenizer, global_step, tr_loss,
+                                                   logging_loss, valid=valid_file)
         logger.info("global_step = %s, average loss = %s", global_step, tr_loss)
-        #train_dataset = load_and_cache_examples(args, tokenizer, evaluate=False)
+        # train_dataset = load_and_cache_examples(args, tokenizer, evaluate=False)
 
-
-        #global_step, tr_loss = train(args, train_dataset, model, tokenizer)
-        #logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
+        # global_step, tr_loss = train(args, train_dataset, model, tokenizer)
+        # logger.info(" global_step = %s, average loss = %s", global_step, tr_loss)
 
     # Saving best-practices: if you use save_pretrained for the model and tokenizer, you can reload them using from_pretrained()
     if args.do_train and (args.local_rank == -1 or torch.distributed.get_rank() == 0):
@@ -591,20 +613,30 @@ def main():
 
     return results
 
-def get_samples(args):
-    path = args.data_folder
-    all_files = os.listdir(path)
-    pattern = re.compile("^[0-9]{3}.*.raw$")
-    # remove everything that is not a raw unprocessed file:
-    all_files = [f for f in all_files if pattern.match(f)]
 
-    raw_files = [os.path.join(path, f) for f in all_files]
-    print(raw_files[:10])
-    random.shuffle(raw_files)
-    return raw_files[:-1], raw_files[-1:]
+def get_samples(args, stat=0):
+    # handle multiple eval files
+    if stat == 1:
+        path = args.eval_path
+        all_files = os.listdir(path)
+        pattern = re.compile("^[0-9]{3}.*.raw$")
+        # remove everything that is not a raw unprocessed file:
+        all_files = [f for f in all_files if pattern.match(f)]
 
+        raw_files = [os.path.join(path, f) for f in all_files]
+        print(raw_files[:5])
+        return raw_files
+    else:
+        path = args.data_folder
+        all_files = os.listdir(path)
+        pattern = re.compile("^[0-9]{3}.*.raw$")
+        # remove everything that is not a raw unprocessed file:
+        all_files = [f for f in all_files if pattern.match(f)]
 
-
+        raw_files = [os.path.join(path, f) for f in all_files]
+        print(raw_files[:10])
+        random.shuffle(raw_files)
+        return raw_files[:-1], raw_files[-1:]
 
 
 if __name__ == "__main__":
