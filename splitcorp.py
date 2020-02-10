@@ -21,10 +21,13 @@ def save_files(data_set, output_path, part):
         file_path = os.path.join(output_path+"\\"+part+"\\", name)
         #file_path = os.path.join(output_path+"/"+part+"/", name)
         output_file = open(file_path, "w", encoding="UTF-8")
-        with open(file, "r", encoding="UTF-8", errors='ignore') as f:
-            text = f.read()
-        output_file.write(text)
-        output_file.close()
+        try:
+            with open(file, "r", encoding="UTF-8", errors='ignore') as f:
+                text = f.read()
+            output_file.write(text)
+            output_file.close()
+        except Exception as e:
+            print("Error processing file " + file)
 
 if __name__ == '__main__':
     path_to_java_corpus = "E:\\Hiwi\\BERT_undCo\\java_projects.tar\\java_projects\\java_projects\\"
