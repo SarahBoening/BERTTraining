@@ -46,7 +46,12 @@ With multiple .raw files
 ```
 python3 ./model_chain.py --data_folder=/home/nilo4793/raid/corpora/Java_split/eval --eval_path=/home/nilo4793/raid/corpora/Java_split/eval --output_dir=/home/nilo4793/raid/output/bert_full_train/ --do_eval --model_type=bert --model_name_or_path=/home/nilo4793/raid/output/bert_full_train --gpu_ids=6 --mlm --pre_process_count=2
 
+```    
+**Run only caching**    
 ```
+python3 ./model_chain.py --data_folder=/home/nilo4793/raid/corpora/ast_serial/5k/train --output_dir=/home/nilo4793/raid/output/bert_full_ast --eval_path=/home/nilo4793/raid/corpora/ast_serial/5k/eval  --model_type=bert --model_name_or_path=bert-base-cased --do_cache --per_gpu_train_batch_size=1 --per_gpu_eval_batch_size=1 --num_train_epochs=1 --save_steps=100 --save_total_limit=100 --overwrite_output_dir --gpu_ids=6 --pre_process_count=8 --logging_steps=5000 --mlm
+```    
+
 ## Benchmark
 1. open the file in an editor of your choice
 2. change the path to your trained model & a valid file to use for the benchmark
