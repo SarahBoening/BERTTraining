@@ -81,10 +81,13 @@ class TextDataset(Dataset):
         return torch.tensor(self.examples[item])
 
 
-def load_and_cache_examples(args, tokenizer, evaluate=False):
-    dataset = TextDataset(tokenizer, file_path=args.eval_path if evaluate else args.train_data_file,
+def load_and_cache_examples(args, files, tokenizer, evaluate=False):
+    results = []
+    for file in files:
+        dataset = TextDataset(tokenizer, file,
                           block_size=args.block_size)
-    return dataset
+        results.append(dataset)
+    return results
 
 
 def load_and_cache_examples_subprocess(process_id, file_list, start, end, args, tokenizer):
@@ -438,6 +441,7 @@ def main():
                         help="Whether to run training.")
     parser.add_argument("--do_eval", action='store_true',
                         help="Whether to run eval on the dev set.")
+    parse.add_argument("--do_cache", action='store_true', help="Cache files")
     parser.add_argument("--evaluate_during_training", action='store_true',
                         help="Run evaluation during training at each logging step.")
     parser.add_argument("--do_lower_case", action='store_true',
@@ -551,13 +555,18 @@ def main():
         if os.path.isdir(args.eval_path):
             valid_file = get_samples(args, 1)
         else:
-            traning_files.append(valid_file[0])
-            valid_file = args.eval_path
+            training_files.append(valid_file[0])
+            valid_file = []
+            valid_file.append(args.eval_path)
+
+    if args.do_cache:
+       train_cache = load_and_cache_examples(args, training_files, tokenizer, evaluate=False)
+       eval_cache = load_and_cache_examples(args, valid_file, tokenizer, evaluate=False)
 
     if args.do_train:
         if args.local_rank not in [-1, 0]:
             torch.distributed.barrier()  # Barrier to make sure only the first process in distributed training process the dataset, and the others will use the cache
-        preprocessed_datasets = load_and_cache_examples_multiprocess(args, training_files, tokenizer, evaluate=False)
+        preprocessed_datasets = load_and_cache_examples(args, training_files, tokenizer, evaluate=False)
         if args.local_rank == 0:
             torch.distributed.barrier()
         global_step = 0
