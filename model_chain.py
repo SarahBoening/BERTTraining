@@ -441,7 +441,7 @@ def main():
                         help="Whether to run training.")
     parser.add_argument("--do_eval", action='store_true',
                         help="Whether to run eval on the dev set.")
-    parse.add_argument("--do_cache", action='store_true', help="Cache files")
+    parser.add_argument("--do_cache", action='store_true', help="Cache files")
     parser.add_argument("--evaluate_during_training", action='store_true',
                         help="Run evaluation during training at each logging step.")
     parser.add_argument("--do_lower_case", action='store_true',
